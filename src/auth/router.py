@@ -11,7 +11,8 @@ from src.auth.schemas import TokenOut, UserLogin
 
 
 router = APIRouter(
-    tags=["Auth"]
+    tags=["Auth"],
+    prefix="/api/v1"
 )
 
 

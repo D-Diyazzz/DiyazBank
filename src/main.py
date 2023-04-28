@@ -5,7 +5,7 @@ from src.auth.router import router
 
 
 app = FastAPI(
-    title="DiyazBank"
+    title="DiyazBank",
 )
 
 
