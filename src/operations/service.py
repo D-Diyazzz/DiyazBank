@@ -49,7 +49,7 @@ async def perform_transfer(
     except exc.NoResultFound as error:
         raise HTTPException(status_code=404, detail=f"User with this phone={transfer_data.receiver_phone} not found")
     
-    transfer_history_create = schemas.TransferHisotryCreate(user_sender=user.id, user_receiver=receiver_user.id, card_sender=card.id, transfer_amount=transfer_data.amount)
+    transfer_history_create = schemas.TransferHisotryCreate(user_sender=user.id, user_receiver=receiver_user.id, card_sender=card.number, transfer_amount=transfer_data.amount)
     transder_history = await crete_history_of_transfer(transfer_history_create, session)
     transfer_history_read = schemas.TransferHistoryRead(
         receipt_number=transder_history.receipt_number, 

@@ -21,6 +21,7 @@ greenlet = "^2.0.2"
 pytest = "^7.3.1"
 pytest-asyncio = "^0.21.0"
 anyio = "^3.6.2"
+pytest-env = "^0.8.1"
 
 
 [build-system]

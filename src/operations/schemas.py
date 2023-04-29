@@ -13,7 +13,7 @@ class TransferHisotryCreate(BaseModel):
     receipt_number: Optional[str] = None
     user_sender: int
     user_receiver: int
-    card_sender: int
+    card_sender: str
     transfer_amount: float
     transfer_date: Optional[datetime] = None
 

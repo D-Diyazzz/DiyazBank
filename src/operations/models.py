@@ -12,7 +12,7 @@ class TransferHistory(Base):
     receipt_number = Column(String(11), unique=True, nullable=False)
     user_sender = Column(Integer, ForeignKey("users.id"), nullable=False)
     user_receiver = Column(Integer, ForeignKey("users.id"), nullable=False)
-    card_sender = Column(Integer, ForeignKey("cards.id"), nullable=True)
+    card_sender = Column(String(16), nullable=False)
     transfer_amount = Column(Numeric(10, 2), nullable=False)
     transfer_date = Column(DateTime, nullable=False)
 
