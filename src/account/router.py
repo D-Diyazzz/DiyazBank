@@ -38,7 +38,7 @@ async def get_account_info(session: AsyncSession = Depends(get_session), user_id
     account_repo = AccountRepository(session)
     card_repo = CardRepository(session)
 
-    account = await account_repo.get_by_id(user_id)
+    account = await account_repo.get_by_user_id(user_id)
     cards = await card_repo.get_all(account.id)
     cards_list = [schemas.CardRead(**i[0].__dict__) for i in cards]
     
@@ -52,7 +52,7 @@ async def create_card(card: CardCreate, session: AsyncSession = Depends(get_sess
     card_repo = CardRepository(session)
     account_repo = AccountRepository(session)
 
-    account = await account_repo.get_by_id(user_id)
+    account = await account_repo.get_by_user_id(user_id)
     card = await card_repo.add(card, account.id)
     card_out = schemas.CardRead(**card.__dict__)
 

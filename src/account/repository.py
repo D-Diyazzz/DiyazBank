@@ -24,6 +24,10 @@ class UserRepository:
     async def get_by_id(self, id:int):
         row = await self.session.execute(select(models.User).where(models.User.id == id))
         return row.one()[0]
+    
+    async def get_by_phone(self, phone:str):
+        row = await self.session.execute(select(models.User).where(models.User.phone_number == phone))
+        return row.one()[0]
 
     async def add(self, user: UserCreate):
         self.session.add(**user)
@@ -41,8 +45,9 @@ class UserRepository:
 class AccountRepository:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
+        
 
-    async def get_by_id(self, id:int):
+    async def get_by_user_id(self, id:int):
         row = await self.session.execute(select(models.Account).where(models.Account.user_id == id))
         return row.one()[0]
     
@@ -57,6 +62,10 @@ class CardRepository:
     
     async def get_by_id(self, id:int):
         row = await self.session.execute(select(models.Card).where(models.Card.id == id))
+        return row.one()[0]
+
+    async def get_by_account_id(self, id:int):
+        row = await self.session.execute(select(models.Card).where(models.Card.account_id == id))
         return row.one()[0]
     
     async def get_by_number(self, number:str):
@@ -74,7 +83,7 @@ class CardRepository:
     
     async def update(self, balance: float, id):
         await self.session.execute(update(models.Card).where(models.Card.id == id).values(balance=balance))
-        await self.session.commit()
+        # await self.session.commit()
 
     async def delete(self, id):
         await self.sessoin.execute(delete(models.Card).where(models.Card.id == id))
