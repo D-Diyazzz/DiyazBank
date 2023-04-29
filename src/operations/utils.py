@@ -1,3 +1,4 @@
+import random
 from fastapi import HTTPException
 from passlib.context import CryptContext
 
@@ -35,3 +36,8 @@ def validate_data_for_transfer(
         raise HTTPException(status_code=422, detail="Amout of money to transfer must not be less than 0 or equal to 0")
     if not verify_pincode(str(transfer_data.pincode), user.hash_pincode):
         raise HTTPException(status_code=401, detail="Invalid pincode")
+    
+    
+def generate_receipt_number():
+    number = [str(random.randint(0, 9)) for _ in range(11)]
+    return "".join(number)

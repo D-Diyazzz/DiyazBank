@@ -7,6 +7,7 @@ from sqlalchemy import exc
 
 from src.database import get_async_session as get_session
 from src.account.repository import *
+from src.operations.repositry import *
 from src.auth.jwt import get_user_id
 from src.operations import schemas
 from src.operations.utils import *
@@ -43,6 +44,16 @@ async def transfer(transfer_data: schemas.TransferCreate, session: AsyncSession 
 
     validate_data_for_transfer(user, account, card, transfer_data)
 
-    await service.perform_transfer(card, transfer_data, user_repo, card_repo, account_repo, session)
+    transfer_history = await service.perform_transfer(user, card, transfer_data, user_repo, card_repo, account_repo, session)
 
-    return{"message": "Transfer successful"}
+    return{"message": "Transfer successful", "transfer": transfer_history}
+
+
+@router.get("/transfer_history")
+async def get_transfer_history(session: AsyncSession = Depends(get_session), user_id = Depends(get_user_id)):
+    transfer_history_repo = TranserHistoryRepositry(session)
+    transfer_histories = await transfer_history_repo.get_all(user_id)
+    print(transfer_histories)
+    transfer_history_list = [schemas.TransferHistoryRead(**i[0].__dict__) for i in transfer_histories]
+
+    return {"transfers": transfer_history_list}
