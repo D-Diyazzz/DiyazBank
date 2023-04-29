@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import exc, select
 
-from src.user import schemas, models
+from src.account import schemas, models
 from src.auth.jwt import *
 from src.database import get_async_session as get_session
 from src.auth.utils import validate_phone_number
@@ -27,7 +27,6 @@ async def register(data: schemas.UserCreate, session: AsyncSession = Depends(get
         hash_pincode=get_password_hash(str(data.pincode)),
         registration_date=datetime.now()
     )
-    
     try:
         session.add(user)
         await session.commit()
@@ -36,8 +35,14 @@ async def register(data: schemas.UserCreate, session: AsyncSession = Depends(get
     except exc.IntegrityError as e:
         print(e)
         return {"Error": f'User with this phone number = "{user.phone_number}" exist'}
-    print(type(user.registration_date))
+    
     user_out = schemas.UserRead(**user.__dict__)
+    
+    account = models.Account(user_id=user.id)
+    
+    session.add(account)
+    await session.commit()
+
     return user_out
 
 

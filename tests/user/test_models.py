@@ -7,7 +7,7 @@ from sqlalchemy import select
 from datetime import datetime, date
 
 from src.database import engine, Base, async_session_maker
-from src.user.models import User
+from src.account.models import User
 
 
 @pytest.fixture(scope='session')

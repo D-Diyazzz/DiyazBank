@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 
 from src.database import engine, Base
-from src.auth.router import router
+from src.auth.router import router as AuthRouter
+from src.account.router import router as AccountRounter
 
 
 app = FastAPI(
@@ -15,4 +16,5 @@ async def startup():
         await conn.run_sync(Base.metadata.create_all)
 
 
-app.include_router(router)
+app.include_router(AuthRouter)
+app.include_router(AccountRounter)
