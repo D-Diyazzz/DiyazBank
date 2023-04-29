@@ -51,12 +51,16 @@ class CardRepository:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
-    async def get_all(self, id):
+    async def get_all(self, id:int):
         rows = await self.session.execute(select(models.Card).where(models.Card.account_id == id))
         return rows.all()
     
-    async def get_by_id(self, id):
+    async def get_by_id(self, id:int):
         row = await self.session.execute(select(models.Card).where(models.Card.id == id))
+        return row.one()[0]
+    
+    async def get_by_number(self, number:str):
+        row = await self.session.execute(select(models.Card).where(models.Card.number == number))
         return row.one()[0]
 
     async def add(self, card: CardCreate, id: int):
@@ -69,7 +73,8 @@ class CardRepository:
         return card
     
     async def update(self, balance: float, id):
-        await self.session.execute(update(models.User).where(models.Card.id == id).values(balance=balance))
+        await self.session.execute(update(models.Card).where(models.Card.id == id).values(balance=balance))
+        await self.session.commit()
 
     async def delete(self, id):
-        await self.sessoin.execute(delete(models.User).where(models.Card.id == id))
+        await self.sessoin.execute(delete(models.Card).where(models.Card.id == id))
