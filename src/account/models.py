@@ -1,4 +1,4 @@
-from sqlalchemy import Numeric, Column, Integer, String, Enum, Text, Table, Date, DateTime, ForeignKey
+from sqlalchemy import Numeric, Column, Integer, String, Enum, Text, Table, Date, DateTime, ForeignKey, CheckConstraint
 from sqlalchemy.orm import relationship
 from enum import Enum as PyEnum
 
@@ -29,7 +29,7 @@ class Account(Base):
     id = Column(Integer, primary_key=True, index=True)
     bonuses = Column(Numeric(10, 2), default=0)
 
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     user = relationship("User", back_populates="account")
     card = relationship("Card", back_populates="account")
     credit = relationship("Credit", back_populates='account')
@@ -44,7 +44,7 @@ class Card(Base):
     __tablename__ = "cards"
 
     id = Column(Integer, primary_key=True, index=True)
-    account_id = Column(Integer, ForeignKey("account.id"))
+    account_id = Column(Integer, ForeignKey("account.id", ondelete="CASCADE"))
     number = Column(String(16), unique=True, nullable=False)
     cvv = Column(String(3), nullable=False)
     balance = Column(Numeric(10, 2), default=0)
@@ -52,12 +52,17 @@ class Card(Base):
     
     account = relationship("Account", back_populates="card")
 
+    __table_args__ = (
+        CheckConstraint('LENGTH(number) = 16'),
+        CheckConstraint('LENGTH(cvv) = 3')
+    )
+
 
 class Credit(Base):
     __tablename__ = "credit"
 
     id = Column(Integer, primary_key=True, index=True)
-    account_id = Column(Integer, ForeignKey("account.id"))
+    account_id = Column(Integer, ForeignKey("account.id", ondelete="CASCADE"))
     amount = Column(Numeric(10, 2), nullable=False)
     remain_to_pay = Column(Numeric(10, 2), nullable=False)
     start_date = Column(Date, nullable=False)
@@ -71,7 +76,7 @@ class Deposit(Base):
     __tablename__ = "deposit"
 
     id = Column(Integer, primary_key=True, index=True)
-    account_id = Column(Integer, ForeignKey("account.id"))
+    account_id = Column(Integer, ForeignKey("account.id", ondelete="CASCADE"))
     interest_rate = Column(Numeric(5, 2), default=1.141)
     balance = Column(Numeric(10, 2), default=0)
     start_date = Column(Date, nullable=False)

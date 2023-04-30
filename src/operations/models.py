@@ -10,8 +10,8 @@ class TransferHistory(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     receipt_number = Column(String(11), unique=True, nullable=False)
-    user_sender = Column(Integer, ForeignKey("users.id"), nullable=False)
-    user_receiver = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_sender = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user_receiver = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     card_sender = Column(String(16), nullable=False)
     transfer_amount = Column(Numeric(10, 2), nullable=False)
     transfer_date = Column(DateTime, nullable=False)
