@@ -17,10 +17,6 @@ class UserRepository:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
-    async def get_all(self):
-        rows = await self.session(select(models.User))
-        return rows.scalars()
-
     async def get_by_id(self, id:int):
         row = await self.session.execute(select(models.User).where(models.User.id == id))
         return row.one()[0]
@@ -51,6 +47,9 @@ class AccountRepository:
         row = await self.session.execute(select(models.Account).where(models.Account.user_id == id))
         return row.one()[0]
     
+    async def delete(self, id):
+        await self.session.execute(delete(models.Account).where(models.Account.id == id))
+    
 
 class CardRepository:
     def __init__(self, session: AsyncSession) -> None:
@@ -64,7 +63,7 @@ class CardRepository:
         row = await self.session.execute(select(models.Card).where(models.Card.id == id))
         return row.one()[0]
 
-    async def get_by_account_id(self, id:int):
+    async def get_first_by_account_id(self, id:int):
         row = await self.session.execute(select(models.Card).where(models.Card.account_id == id))
         return row.one()[0]
     
