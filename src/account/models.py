@@ -29,7 +29,7 @@ class Account(Base):
     id = Column(Integer, primary_key=True, index=True)
     bonuses = Column(Numeric(10, 2), default=0)
 
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     user = relationship("User", back_populates="account")
     card = relationship("Card", back_populates="account")
     credit = relationship("Credit", back_populates='account')

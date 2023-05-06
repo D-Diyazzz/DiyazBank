@@ -22,6 +22,9 @@ async def async_setup_database():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
+    yield
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
 
 
 @pytest_asyncio.fixture
@@ -30,51 +33,31 @@ async def session(async_setup_database):
         yield session
 
 
-# @pytest_asyncio.fixture
-# async def init_objects(session):
-#     user = User(firstname='Name', lastname='Name', phone_number='1234567890', hash_password='password', 
-#                 hash_pincode='1234', date_of_birth=datetime.strptime('1990-01-01', '%Y-%m-%d').date(), address='Manasa', 
-#                 registration_date=datetime.strptime('2022-04-28T15:30:00', '%Y-%m-%dT%H:%M:%S'), iin='123456789012')
-#     session.add(user)
-#     await session.commit()
-#     await session.refresh(user)
-
-#     account = Account(user_id=user.id)
-#     session.add(account)
-#     await session.commit()
-#     await session.refresh(account)
-
-#     card = Card(account_id=account.id, number="1234567890123456", cvv="111", card_type=CardType.DIYAZ_GOLD)
-#     session.add(card)
-#     await session.commit()
-
-#     await session.refresh(card)
-
-#     return user, account, card
-
 @pytest_asyncio.fixture
-async def init_user(session):
-    user = User(firstname='Name', lastname='Name', phone_number='1234567890', hash_password='password', 
+async def init_objects(session):
+    user = User(id=1, firstname='Name', lastname='Name', phone_number='1234567890', hash_password='password', 
                 hash_pincode='1234', date_of_birth=datetime.strptime('1990-01-01', '%Y-%m-%d').date(), address='Manasa', 
                 registration_date=datetime.strptime('2022-04-28T15:30:00', '%Y-%m-%dT%H:%M:%S'), iin='123456789012')
     session.add(user)
+
+    account = Account(user_id=user.id)
+    session.add(account)
+
+    card = Card(account_id=account.id, number="1234567890123456", cvv="111", card_type=CardType.DIYAZ_GOLD)
+    session.add(card)
+
     await session.commit()
     await session.refresh(user)
-    return user
-
-@pytest_asyncio.fixture
-async def init_account(session, init_user):
-    account = Account(user_id=init_user.id)
-    session.add(account)
-    await session.commit()
     await session.refresh(account)
-    return account
+    await session.refresh(card)
+
+    return user, account, card
 
 
 class TestUserModel():
 
     @pytest.mark.asyncio
-    async def test_add_user(self, session, init_user):
+    async def test_add_user(self, session, init_objects):
 
         result = await session.execute(select(User).where(User.phone_number=='1234567890'))
         user = result.scalar_one()
@@ -90,7 +73,7 @@ class TestUserModel():
 
 
     @pytest.mark.asyncio
-    async def test_add_user_duplicate_phone_number(self, session, init_user):
+    async def test_add_user_duplicate_phone_number(self, session, init_objects):
         with pytest.raises(IntegrityError):
             user = User(firstname='Name', lastname='Name', phone_number='1234567890', hash_password='password',
                         hash_pincode='1234', date_of_birth=date(2001, 1, 1), address='Manasa',
@@ -100,9 +83,9 @@ class TestUserModel():
 
 
     @pytest.mark.asyncio
-    async def test_add_user_duplicate_iin(self, session, init_user):
+    async def test_add_user_duplicate_iin(self, session, init_objects):
         with pytest.raises(IntegrityError) as error:
-            user = User(firstname='Name', lastname='Name', phone_number='5555555555', hash_password='password',
+            user = User(id=2, firstname='Name', lastname='Name', phone_number='5555555555', hash_password='password',
                         hash_pincode='1234', date_of_birth=date(1990, 1, 1), address='Manasa',
                         registration_date=datetime(2022, 4, 28, 15, 30), iin='123456789012')
             session.add(user)
@@ -111,9 +94,9 @@ class TestUserModel():
         assert f'Key (iin)=({user.iin}) already exists.' in str(error.value)
 
     @pytest.mark.asyncio
-    async def test_add_user_without_firstname(self, session, init_user):
+    async def test_add_user_without_firstname(self, session, init_objects):
         with pytest.raises(IntegrityError) as error:
-            user = User(lastname='Name', phone_number='5555555555', hash_password='password',
+            user = User(id=2, lastname='Name', phone_number='5555555555', hash_password='password',
                             hash_pincode='1234', date_of_birth=date(1990, 1, 1), address='Manasa',
                             registration_date=datetime(2022, 4, 28, 15, 30), iin='123456789012')
             session.add(user)
