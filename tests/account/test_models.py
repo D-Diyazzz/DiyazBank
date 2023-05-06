@@ -40,7 +40,7 @@ async def init_objects(session):
                 registration_date=datetime.strptime('2022-04-28T15:30:00', '%Y-%m-%dT%H:%M:%S'), iin='123456789012')
     session.add(user)
 
-    account = Account(user_id=user.id)
+    account = Account(id=1, user_id=user.id)
     session.add(account)
 
     card = Card(account_id=account.id, number="1234567890123456", cvv="111", card_type=CardType.DIYAZ_GOLD)
@@ -124,4 +124,50 @@ class TestAccountModel():
 
         assert 'null value in column "user_id" of relation "account" violates not-null constraint' in str(error.value)
 
+
+class TestCardModel():
+
+    @pytest.mark.asyncio
+    async def test_add_card(self, session, init_objects):
+        account = init_objects[1]
+
+        result = await session.execute(select(Card).where(Card.account_id == account.id))
+        card = result.one()[0]
+
+        assert card.account_id == account.id
+        assert len(card.number) == 16
+        assert len(card.cvv) == 3
+        assert card.balance == 0
+        assert card.card_type == CardType.DIYAZ_GOLD
+
+    @pytest.mark.asyncio
+    async def test_add_card_with_wrong_length_of_number(self, session, init_objects):
+        account = init_objects[1]
         
+        with pytest.raises(IntegrityError) as error:
+            card = Card(account_id=account.id, number="1", cvv="111", card_type=CardType.DIYAZ_GOLD)
+            session.add(card)
+            await session.commit()
+        assert 'new row for relation "cards" violates check constraint "cards_number_check"' in str(error.value)
+    
+    @pytest.mark.asyncio
+    async def test_add_card_with_wrong_length_of_cvv(self, session, init_objects):
+        account = init_objects[1]
+        
+        with pytest.raises(IntegrityError) as error:
+            card = Card(account_id=account.id, number="1234567890123456", cvv="1", card_type=CardType.DIYAZ_GOLD)
+            session.add(card)
+            await session.commit()
+
+        assert 'new row for relation "cards" violates check constraint "cards_cvv_check"' in str(error.value)
+
+    @pytest.mark.asyncio
+    async def test_add_diyaz_bonus_card(self, session, init_objects):
+        account = init_objects[1]
+
+        card = Card(account_id=account.id, number="1234567890123457", cvv="111", card_type=CardType.DIYAZ_BONUS)
+        session.add(card)
+        await session.commit()
+        await session.refresh(card)
+        
+        assert card.card_type == CardType.DIYAZ_BONUS
