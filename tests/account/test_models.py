@@ -105,12 +105,23 @@ class TestUserModel():
         assert 'null value in column "firstname" of relation "users" violates not-null constraint' in str(error.value)
 
 
-# class TestAccountModel():
+class TestAccountModel():
 
-#     @pytest.mark.asyncio
-#     async def test_add_account(self, session, init_user, init_account):
-        # result = await session.execute(select(Account).where(Account.user_id==init_user.id))
-        # account = result.one()[0]
-        # assert account.bonuses == 0
-        # assert account.user_id == init_user.id
-       
+    @pytest.mark.asyncio
+    async def test_add_account(self, session, init_objects):
+        user = init_objects[0]
+        result = await session.execute(select(Account).where(Account.user_id == user.id))
+        account = result.one()[0]
+        assert account.bonuses == 0
+        assert account.user_id == user.id
+
+    @pytest.mark.asyncio
+    async def test_add_account_without_user(self, session, init_objects):
+        with pytest.raises(IntegrityError) as error:
+            account = Account()
+            session.add(account)
+            await session.commit()
+
+        assert 'null value in column "user_id" of relation "account" violates not-null constraint' in str(error.value)
+
+        
