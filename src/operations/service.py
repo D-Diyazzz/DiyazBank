@@ -45,7 +45,7 @@ async def perform_transfer(
     try:
         receiver_user = await user_repo.get_by_phone(transfer_data.receiver_phone)
         receiver_account = await account_repo.get_by_user_id(receiver_user.id)
-        receiver_card = await card_repo.get_by_account_id(receiver_account.id)
+        receiver_card = await card_repo.get_first_by_account_id(receiver_account.id)
     except exc.NoResultFound as error:
         raise HTTPException(status_code=404, detail=f"User with this phone={transfer_data.receiver_phone} not found")
     

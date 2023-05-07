@@ -1,4 +1,5 @@
 import abc
+from datetime import datetime
 from sqlalchemy.orm import Session
 from sqlalchemy import select, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -6,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.account import models
 from src.account.schemas import *
 from src.account.utils import *
+from src.auth.jwt import get_password_hash
 
 
 # class AbstractRepository(abc.ABC):
@@ -26,7 +28,12 @@ class UserRepository:
         return row.one()[0]
 
     async def add(self, user: UserCreate):
-        self.session.add(**user)
+        hash_pincode = get_password_hash(str(user.pincode))
+        hash_password = get_password_hash(user.password)
+        user = models.User(firstname=user.firstname, lastname=user.lastname,phone_number=user.phone_number,
+                           date_of_birth=user.date_of_birth, hash_password=hash_password, 
+                           hash_pincode=hash_pincode, registration_date=datetime.now())
+        self.session.add(user)
         await self.session.commit()
         await self.session.refresh(user)
         return user
@@ -35,7 +42,7 @@ class UserRepository:
         await self.session.execute(update(models.User).where(models.User.id == id).values(**user.get_non_null_fields()))
 
     async def delete(self, id):
-        await self.sessoin.execute(delete(models.User).where(models.User.id == id))
+        await self.session.execute(delete(models.User).where(models.User.id == id))
 
 
 class AccountRepository:
