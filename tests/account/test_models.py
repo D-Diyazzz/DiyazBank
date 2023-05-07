@@ -10,29 +10,6 @@ from src.database import engine, Base, async_session_maker
 from src.account.models import User, Account, Card, CardType
 
 
-@pytest.fixture(scope='session')
-def event_loop():
-    loop = asyncio.get_event_loop()
-    yield loop
-    loop.close()
-
-
-@pytest_asyncio.fixture
-async def async_setup_database():
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
-        await conn.run_sync(Base.metadata.create_all)
-    yield
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
-
-
-@pytest_asyncio.fixture
-async def session(async_setup_database):
-    async with async_session_maker() as session:
-        yield session
-
-
 @pytest_asyncio.fixture
 async def init_objects(session):
     user = User(id=1, firstname='Name', lastname='Name', phone_number='1234567890', hash_password='password', 
